@@ -2,8 +2,9 @@ from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from rest_framework import filters, mixins, status, views, viewsets
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from rest_framework.decorators import action
 
 from djoser.views import UserViewSet
 
@@ -12,7 +13,8 @@ from recipes.models import Recipe, Tag, Ingredient, User, RecipeIngredient
 from .serializers import (IngredientSerializer, FavoriteSerializer,
                           FollowingSrializer,
                           RecipeSerializer, RecipeCreateSerializer,
-                          TagSerializer, UserSerializer, UserMeSerializer)
+                          TagSerializer, CustomUserSerializer)
+from .filters import IngredientFilter
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -37,6 +39,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeCreateSerializer
         return RecipeSerializer
 
+    @action(methods=('POST', 'DELETE'), detail=True)
+    def favorite(self, request):
+        pass
+
 
 class TagViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
                  viewsets.GenericViewSet):
@@ -53,8 +59,8 @@ class IngredientViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
 
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
+    filter_backends = (IngredientFilter,)
+    search_fields = ('^name',)
     permission_classes = (IsAdminOrReadOnly,)
 
 
@@ -124,25 +130,6 @@ class CustomUserViewSet(UserViewSet):
     """ViewSet для /users."""
 
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = CustomUserSerializer
     pagination_class = LimitOffsetPagination
-    # permission_classes = ()
-
-
-class UserMeDetailUpdateAPIView(views.APIView):
-    # permission_classes = (IsAuthenticated,) в redoc только get
-    serializer_class = UserMeSerializer
-
-    def get(self, request):
-        instance = get_object_or_404(User, pk=request.user.id)
-        serializer = self.serializer_class(instance=instance)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def patch(self, request):
-        instance = get_object_or_404(User, pk=request.user.id)
-        serializer = self.serializer_class(
-            instance, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.update(instance, serializer.validated_data)
-            return Response(serializer.validated_data, status=200)
-        return Response(serializer.errors, status=400)
+    permission_classes = (AllowAny,)

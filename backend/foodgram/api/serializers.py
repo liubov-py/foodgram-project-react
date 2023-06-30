@@ -4,6 +4,7 @@ import webcolors
 from rest_framework import serializers
 from django.core.files.base import ContentFile
 from rest_framework.validators import UniqueTogetherValidator
+from djoser.serializers import UserSerializer
 
 from recipes.models import Ingredient, Favorite, Tag, Recipe, RecipeIngredient
 from users.models import User, Following
@@ -39,7 +40,7 @@ class Hex2NameColor(serializers.Field):
         return data
 
 
-class UserSerializer(serializers.ModelSerializer):
+class CustomUserSerializer(UserSerializer):
     """Serializer для /users."""
 
     is_subscribed = serializers.SerializerMethodField('get_is_subscribed')
@@ -47,46 +48,24 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'username',
-                  'first_name', 'last_name',
+                  'first_name', 'last_name', 'password',
                   'is_subscribed')
-        lookup_field = 'username'
-        validators = [
-            serializers.UniqueTogetherValidator(
-                queryset=model.objects.all(),
-                fields=('username', 'email'),
-                message=("Пользователь с указанными именем или адресом есть.")
-            )
-        ]
 
     def get_is_subscribed(self, obj):
         user = self.context.get('request').user
         return user.is_authenticated and user.following.filter(following=obj).exists()
-
-    def validate_username(self, value):
-        if not name_is_valid(value):
-            raise serializers.ValidationError('Содержит недопустимые символы.')
-        return value
-
-
-class UserMeSerializer(serializers.ModelSerializer):
-    """Serializer для /users/me."""
-
-    is_subscribed = serializers.SerializerMethodField('get_is_subscribed')
-
-    class Meta:
-        model = User
-        fields = ('email', 'id', 'username',
-                  'first_name', 'last_name',
-                  'is_subscribed')
 
     def validate_username(self, value):
         if not name_is_valid(value):
             raise serializers.ValidationError('Содержит недопустимые символы.')
         return value
     
-    def get_is_subscribed(self, obj):
-        user = self.context.get('request').user
-        return user.is_authenticated and user.following.filter(following=obj).exists()
+    def create(self, validated_data):
+        user = User.objects.create(email= validated_data['email'], username=validated_data['username'],
+                  first_name=validated_data['first_name'], last_name=validated_data['last_name'],)
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
 
 
 class TagSerializer(serializers.ModelSerializer):

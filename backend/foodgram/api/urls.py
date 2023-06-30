@@ -26,21 +26,11 @@ router.register('tags',
                 views.TagViewSet,
                 basename='')
 
-# router.register(r'users/(?P<id>\d+)/subscribe',
-#                 views.FollowingViewSet,
-#                 basename='')
-
-# router.register('users/subscriptions',
-#                 views.FollowingViewSet,
-#                 basename='')
-
 router.register('users',
                 views.CustomUserViewSet,
                 basename='user')
 
 urlpatterns = [
-    path('users/me/',
-         views.UserMeDetailUpdateAPIView.as_view(), name='userme'),
     path('', include(router.urls)),
-    path('pdf', views.getpdf),
+    # path('pdf', views.getpdf),
 ]

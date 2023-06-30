@@ -1,3 +1,5 @@
+from rest_framework import filters
+
 # class RecipeFilter(FilterSet):
 #     tags = filters.ModelMultipleChoiceFilter(
 #         field_name='tags__slug',
@@ -46,3 +48,7 @@
 #         fields = (
 #             'author',
 #         )
+
+
+class IngredientFilter(filters.SearchFilter):
+    search_param = 'name'
