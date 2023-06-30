@@ -11,13 +11,10 @@ class User(AbstractUser):
                                 unique=True,
                                 verbose_name='логин пользователя',)
     first_name = models.CharField(max_length=150,
-                                  unique=True,
                                   verbose_name='имя пользователя',)
     last_name = models.CharField(max_length=150,
-                                 unique=True,
                                  verbose_name='фамилия пользователя',)
     password = models.CharField(max_length=150,
-                                unique=True,
                                 verbose_name='пароль',)
 
 
