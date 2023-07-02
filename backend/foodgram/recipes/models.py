@@ -12,8 +12,8 @@ class Ingredient(models.Model):
 
     name = models.CharField(max_length=250,
                             verbose_name='Ингердиент')
-    measurement = models.CharField(max_length=250,
-                                   verbose_name='Единицы измерения')
+    measurement_unit = models.CharField(max_length=250,
+                                        verbose_name='Единицы измерения')
 
     def __str__(self):
         return self.name
@@ -42,7 +42,7 @@ class Recipe(models.Model):
                                on_delete=models.CASCADE,
                                related_name='recipes',
                                verbose_name='Автор рецепта')
-    ingredient = models.ManyToManyField(Ingredient,
+    ingredients = models.ManyToManyField(Ingredient,
                                         related_name='recipes',
                                         verbose_name='Ингредиент',
                                         through='RecipeIngredient')
@@ -54,8 +54,8 @@ class Recipe(models.Model):
             MinValueValidator(1)
         ]
                                        )
-    tag = models.ManyToManyField(Tag,
-                                 related_name="recipes",
+    tags = models.ManyToManyField(Tag,
+                                 related_name='recipes',
                                  verbose_name='Теги')
 
     def __str__(self):
@@ -65,11 +65,13 @@ class Recipe(models.Model):
 class RecipeIngredient(models.Model):
     """Модель связи рецепт - ингредиент."""
 
-    name = models.ForeignKey(Recipe, related_name='recipeing',
-                             on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, related_name='recipeing',
+                               on_delete=models.CASCADE)
     ingredient = models.ForeignKey(Ingredient, related_name='recipeing',
                                    on_delete=models.CASCADE)
-    count = models.IntegerField(verbose_name='Количество')
+    amount = models.PositiveSmallIntegerField(
+        verbose_name='Количество',
+        validators=[MinValueValidator(1)])
 
 
 class Favorite(models.Model):
@@ -95,7 +97,8 @@ class Favorite(models.Model):
 
 
 class UserShoppingCart(models.Model):
-    
+    """Корзина покупок."""
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

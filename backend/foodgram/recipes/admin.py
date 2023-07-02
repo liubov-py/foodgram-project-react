@@ -8,7 +8,7 @@ class RecipeAdmin(admin.ModelAdmin):
     """Админка для модели рецептов."""
 
     list_display = ('name', 'author', 'show_average')
-    list_filter = ('name', 'author', 'tag')
+    list_filter = ('name', 'author', 'tags')
 
     def show_average(self, obj):
         """Общее число добавлений этого рецепта в избранное."""
@@ -18,7 +18,7 @@ class RecipeAdmin(admin.ModelAdmin):
 class IngredientAdmin(admin.ModelAdmin):
     """Админка для модели ингредиентов."""
 
-    list_display = ('name', 'measurement',)
+    list_display = ('name', 'measurement_unit',)
 
 
 class TagAdmin(admin.ModelAdmin):

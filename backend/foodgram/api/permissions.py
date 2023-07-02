@@ -1,20 +1,15 @@
 from rest_framework import permissions
 
 
-# class IsAuthorModeratorAdminOrReadOnly(permissions.BasePermission):
+class IsAdminOrAuthorOrReadOnly(permissions.BasePermission):
+    """Изменение только для автора или админа."""
 
-#     def has_permission(self, request, view):
-#         return (request.method in permissions.SAFE_METHODS
-#                 or request.user.is_authenticated)
-
-#     def has_object_permission(self, request, view, obj):
-#         return (request.method in permissions.SAFE_METHODS
-#                 or obj.author == request.user
-#                 or request.user.is_moderator
-#                 or request.user.is_admin)
+    def has_object_permission(self, request, view, obj):
+        if (obj.author == request.user or
+                request.user.is_staff):
+            return True
 
 
-# создание прав доступа по ТЗ:
 class IsAuthorOrReadOnly(permissions.BasePermission):
     """Безопасные методы для всех, а изменение только для автора."""
 
