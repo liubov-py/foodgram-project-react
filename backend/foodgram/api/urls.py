@@ -2,8 +2,7 @@ from django.urls import include, path
 from rest_framework import routers
 
 from .views import (CustomUserViewSet, IngredientViewSet, RecipeViewSet,
-                    TagViewSet,)
-
+                    TagViewSet)
 
 router = routers.DefaultRouter()
 
@@ -21,5 +20,4 @@ router.register('users',
                 basename='user')
 urlpatterns = [
     path('', include(router.urls)),
-    # path('pdf', views.getpdf),
 ]

@@ -1,7 +1,6 @@
 from django.contrib import admin
-from django.db.models import Avg
 
-from recipes.models import Ingredient, Favorite, Recipe, Tag
+from recipes.models import Favorite, Ingredient, Recipe, Tag, UserShoppingCart
 
 
 class RecipeAdmin(admin.ModelAdmin):
@@ -12,7 +11,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
     def show_average(self, obj):
         """Общее число добавлений этого рецепта в избранное."""
-        return Favorite.objects.filter(favorite=obj).count
+        return obj.favorite.count()
 
 
 class IngredientAdmin(admin.ModelAdmin):
@@ -30,10 +29,17 @@ class TagAdmin(admin.ModelAdmin):
 class FavoriteAdmin(admin.ModelAdmin):
     """Админка для модели добавления в избранное рецептов."""
 
-    list_display = ('user', 'favorite')
+    list_display = ('user', 'recipe')
+
+
+class UserShoppingCartAdmin(admin.ModelAdmin):
+    """Админка для модели добавления в избранное рецептов."""
+
+    list_display = ('user', 'recipe')
 
 
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Favorite, FavoriteAdmin)
+admin.site.register(UserShoppingCart, UserShoppingCartAdmin)

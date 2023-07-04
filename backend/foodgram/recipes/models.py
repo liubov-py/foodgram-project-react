@@ -1,8 +1,7 @@
-from django.db import models
 from django.contrib.auth import get_user_model
-from django.db.models import UniqueConstraint
 from django.core.validators import MinValueValidator
-
+from django.db import models
+from django.db.models import UniqueConstraint
 
 User = get_user_model()
 
@@ -43,9 +42,9 @@ class Recipe(models.Model):
                                related_name='recipes',
                                verbose_name='Автор рецепта')
     ingredients = models.ManyToManyField(Ingredient,
-                                        related_name='recipes',
-                                        verbose_name='Ингредиент',
-                                        through='RecipeIngredient')
+                                         related_name='recipes',
+                                         verbose_name='Ингредиент',
+                                         through='RecipeIngredient')
     image = models.ImageField(upload_to='recipes/', null=True, blank=True)
     cooking_time = models.IntegerField(
         verbose_name='Время приготовления в минутах',
@@ -55,8 +54,11 @@ class Recipe(models.Model):
         ]
                                        )
     tags = models.ManyToManyField(Tag,
-                                 related_name='recipes',
-                                 verbose_name='Теги')
+                                  related_name='recipes',
+                                  verbose_name='Теги')
+
+    class Meta:
+        ordering = ['-id']
 
     def __str__(self):
         return self.name
@@ -65,9 +67,10 @@ class Recipe(models.Model):
 class RecipeIngredient(models.Model):
     """Модель связи рецепт - ингредиент."""
 
-    recipe = models.ForeignKey(Recipe, related_name='recipeing',
+    recipe = models.ForeignKey(Recipe, related_name='ingredients_in_recipe',
                                on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, related_name='recipeing',
+    ingredient = models.ForeignKey(Ingredient,
+                                   related_name='recipes_for_ingredient',
                                    on_delete=models.CASCADE)
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество',
@@ -80,18 +83,18 @@ class Favorite(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='favorites',
+        related_name='favorite',
     )
-    favorite = models.ForeignKey(
+    recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='favorites',
+        related_name='favorite',
     )
 
     class Meta:
         constraints = [
             UniqueConstraint(
-                fields=['user', 'favorite'], name='unique_favorite'
+                fields=['user', 'recipe'], name='unique_favorite'
             )
         ]
 
@@ -102,17 +105,19 @@ class UserShoppingCart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='shoping_cart',
+        related_name='shopping_cart',
     )
-    favorite = models.ForeignKey(
+    recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name='shopping_cart',
+        default=1
+
     )
 
     class Meta:
         constraints = [
             UniqueConstraint(
-                fields=['user', 'favorite'], name='unique_shopping_cart'
+                fields=['user', 'recipe'], name='unique_shopping_cart'
             )
         ]

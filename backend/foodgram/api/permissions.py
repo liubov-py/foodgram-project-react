@@ -8,6 +8,7 @@ class IsAdminOrAuthorOrReadOnly(permissions.BasePermission):
         if (obj.author == request.user or
                 request.user.is_staff):
             return True
+        return False
 
 
 class IsAuthorOrReadOnly(permissions.BasePermission):
@@ -19,7 +20,7 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return obj.author == request.user
-    
+
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     """Безопасные методы для всех, а изменение только для админ."""
