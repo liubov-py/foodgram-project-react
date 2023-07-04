@@ -72,8 +72,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
         recipeingredients = RecipeIngredient.objects.filter(
-            recipe__shopping_cart__user=request.user
-            ).values('ingredient__name').annotate(amount=Sum('amount'))
+            recipe__shopping_cart__user=request.user).values(
+            'ingredient__name').annotate(amount=Sum('amount'))
         with open('Shopping.txt', 'w') as file:
             for ing in recipeingredients:
                 file.write(ing['ingredient__name'] + ' ' + str(ing['amount']))

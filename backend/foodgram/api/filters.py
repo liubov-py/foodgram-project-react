@@ -13,11 +13,11 @@ class RecipeFilter(FilterSet):
         field_name='tags__slug',
         to_field_name='slug',
         queryset=Tag.objects.all()
-        )
+    )
 
     is_favorited = NumberFilter(
-       method='get_is_favorited'
-    )
+        method='get_is_favorited')
+
     is_in_shopping_cart = NumberFilter(
         method='get_is_in_shopping_cart'
     )

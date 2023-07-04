@@ -51,8 +51,7 @@ class Recipe(models.Model):
         default=1,
         validators=[
             MinValueValidator(1)
-        ]
-                                       )
+        ])
     tags = models.ManyToManyField(Tag,
                                   related_name='recipes',
                                   verbose_name='Теги')

@@ -56,8 +56,8 @@ class CustomUserSerializer(UserSerializer):
 
     def get_is_subscribed(self, obj):
         user = self.context.get('request').user
-        return (user.is_authenticated and
-                user.following.filter(following=obj).exists())
+        return (user.is_authenticated and Following.objects.filter(
+            user=user, following=obj).exists())
 
     def validate_username(self, value):
         if not name_is_valid(value):
@@ -125,16 +125,16 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_is_favorited(self, obj):
         user = self.context.get('request').user
         request = self.context.get('request')
-        return (user.is_authenticated and
-                Favorite.objects.filter(recipe=obj,
-                                        user=request.user).exists())
+        return (user.is_authenticated and Favorite.objects.filter(
+            recipe=obj,
+            user=request.user).exists())
 
     def get_is_in_shopping_cart(self, obj):
         user = self.context.get('request').user
         request = self.context.get('request')
-        return (user.is_authenticated and
-                UserShoppingCart.objects.filter(recipe=obj,
-                                                user=request.user).exists())
+        return (user.is_authenticated and UserShoppingCart.objects.filter(
+            recipe=obj,
+            user=request.user).exists())
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
@@ -172,10 +172,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         recipe_list = []
         for ingredient in ingredients:
             recipe_list.append(
-                RecipeIngredient(
-                                    recipe=recipe,
-                                    ingredient_id=ingredient['id'],
-                                    amount=ingredient['amount']))
+                RecipeIngredient(recipe=recipe,
+                                 ingredient_id=ingredient['id'],
+                                 amount=ingredient['amount']))
         RecipeIngredient.objects.bulk_create(
             recipe_list)
         return recipe
@@ -190,10 +189,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         recipe_list = []
         for ingredient in ingredients:
             recipe_list.append(
-                RecipeIngredient(
-                                    recipe=recipe,
-                                    ingredient_id=ingredient['id'],
-                                    amount=ingredient['amount']))
+                RecipeIngredient(recipe=recipe,
+                                 ingredient_id=ingredient['id'],
+                                 amount=ingredient['amount']))
         RecipeIngredient.objects.bulk_create(
             recipe_list)
         recipe.save()
@@ -262,8 +260,8 @@ class FollowingSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         user = self.context.get('request').user
-        return (user.is_authenticated and
-                user.following.filter(following=obj).exists())
+        return (user.is_authenticated and Following.objects.filter(
+            following=obj, user=user).exists())
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
