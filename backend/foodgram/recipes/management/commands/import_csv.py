@@ -1,7 +1,6 @@
 import csv
 import os
 
-from django.contrib.staticfiles import finders
 from django.core.management.base import BaseCommand
 
 from recipes.models import Ingredient
