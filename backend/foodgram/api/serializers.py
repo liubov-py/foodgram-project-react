@@ -122,24 +122,22 @@ class RecipeSerializer(serializers.ModelSerializer):
                   'tags', 'ingredients', 'is_favorited', 'is_in_shopping_cart')
 
     def get_is_favorited(self, obj):
-        user = self.context.get('request').user
         request = self.context.get('request')
+        user = request.user
         return (user.is_authenticated and Favorite.objects.filter(
             recipe=obj,
-            user=request.user).exists())
+            user=user).exists())
 
     def get_is_in_shopping_cart(self, obj):
-        user = self.context.get('request').user
         request = self.context.get('request')
+        user = request.user
         return (user.is_authenticated and UserShoppingCart.objects.filter(
             recipe=obj,
-            user=request.user).exists())
+            user=user).exists())
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     """Serializer для промежуточной таблицы Рецепт-Ингердиент."""
-
-    id = serializers.IntegerField()
 
     class Meta:
         model = RecipeIngredient
@@ -150,8 +148,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     """Serializer для создания рецептов."""
 
     author = CustomUserSerializer(read_only=True)
-    tags = serializers.ListField(child=serializers.PrimaryKeyRelatedField(
-        queryset=Tag.objects.all()))
+    tags = TagSerializer(many=True)
     ingredients = RecipeIngredientSerializer(many=True)
     image = Base64ImageField(required=False, allow_null=True)
 
@@ -163,11 +160,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     def to_representation(self, value):
         return RecipeSerializer(value, context=self.context).data
 
-    def create(self, validated_data):
-        tags = validated_data.pop('tags')
-        ingredients = validated_data.pop('ingredients')
-        recipe = Recipe.objects.create(**validated_data)
-        recipe.tags.set(tags)
+    def ingredient_create(self, recipe, ingredients):
         recipe_list = []
         for ingredient in ingredients:
             recipe_list.append(
@@ -176,6 +169,13 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                                  amount=ingredient['amount']))
         RecipeIngredient.objects.bulk_create(
             recipe_list)
+
+    def create(self, validated_data):
+        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients')
+        recipe = Recipe.objects.create(**validated_data)
+        recipe.tags.set(tags)
+        self.ingredient_create(self, recipe, ingredients)
         return recipe
 
     def update(self, recipe, validated_data):
@@ -185,14 +185,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         recipe.tags.clear()
         recipe.tags.set(tags)
         recipe.ingredients.clear()
-        recipe_list = []
-        for ingredient in ingredients:
-            recipe_list.append(
-                RecipeIngredient(recipe=recipe,
-                                 ingredient_id=ingredient['id'],
-                                 amount=ingredient['amount']))
-        RecipeIngredient.objects.bulk_create(
-            recipe_list)
+        self.ingredient_create(self, recipe, ingredients)
         recipe.save()
         return recipe
 
@@ -227,8 +220,11 @@ class FollowingSerializer(serializers.ModelSerializer):
     """Сериализатор для подписки."""
 
     is_subscribed = serializers.SerializerMethodField(read_only=True)
-    recipes_count = serializers.SerializerMethodField(read_only=True)
     recipes = serializers.SerializerMethodField(read_only=True)
+    recipes_count = serializers.IntegerField(
+        source='recipes.count',
+        read_only=True
+    )
 
     class Meta:
         model = User
@@ -255,15 +251,12 @@ class FollowingSerializer(serializers.ModelSerializer):
         if data == self.context.get('request').user:
             raise serializers.ValidationError(
                 'Подписаться на себя невозможно')
-        return
+        return data
 
     def get_is_subscribed(self, obj):
         user = self.context.get('request').user
         return (user.is_authenticated and Following.objects.filter(
             following=obj, user=user).exists())
-
-    def get_recipes_count(self, obj):
-        return obj.recipes.count()
 
     def get_recipes(self, obj):
         request = self.context.get('request')
