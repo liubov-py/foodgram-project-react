@@ -17,4 +17,3 @@ COPY . .
 
 RUN chmod +x run_app.sh
 ENTRYPOINT [ "/app/run_app.sh" ]
-# CMD ["gunicorn", "--bind", "0.0.0.0:8000", "kittygram_backend.wsgi"]

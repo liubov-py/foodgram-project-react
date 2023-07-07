@@ -12,13 +12,13 @@ from rest_framework.response import Response
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             Tag, UserShoppingCart)
 from users.models import Following, User
-
 from .filters import IngredientFilter, RecipeFilter
 from .pagination import CustomPagination
 from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from .serializers import (CustomUserSerializer, FollowingSerializer,
                           IngredientSerializer, RecipeCreateSerializer,
                           RecipeSerializer, TagSerializer)
+from .utils import create_report
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -40,11 +40,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
     def method_post(self, model, user, pk):
-        recipe = get_object_or_404(Recipe, id=pk)
         if model.objects.filter(user=user, recipe__id=pk).exists():
             return Response({'errors':
                              'Уже добавлен в список'},
                             status=status.HTTP_400_BAD_REQUEST)
+        recipe = get_object_or_404(Recipe, id=pk)
         model.objects.create(user=user, recipe=recipe)
         serializer = RecipeSerializer(recipe)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -71,13 +71,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(methods=('GET',), detail=False,
             permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
-        recipeingredients = RecipeIngredient.objects.filter(
+        recipe_ingredients = RecipeIngredient.objects.filter(
             recipe__shopping_cart__user=request.user).values(
             'ingredient__name').annotate(amount=Sum('amount'))
-        with open('Shopping.txt', 'w') as file:
-            for ing in recipeingredients:
-                file.write(ing['ingredient__name'] + ' ' + str(ing['amount']))
-        return FileResponse(open('Shopping.txt', 'rb'), as_attachment=True)
+        file_name = 'Shopping.txt'
+        create_report(recipe_ingredients, file_name)
+        return FileResponse(open(file_name, 'rb'), as_attachment=True)
 
 
 class TagViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
@@ -117,13 +116,6 @@ class CustomUserViewSet(UserViewSet):
             user=user, following=following)
 
         if request.method == 'POST':
-            if subscription.exists():
-                return Response({'error': 'Вы уже подписаны на этого автора'},
-                                status=status.HTTP_400_BAD_REQUEST)
-            if user == following:
-                return Response({'error':
-                                 'Невозможно подписаться на самого себя'},
-                                status=status.HTTP_400_BAD_REQUEST)
             serializer = FollowingSerializer(following, context={
                 'request': request})
             Following.objects.create(user=user, following=following)
