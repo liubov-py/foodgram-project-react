@@ -18,7 +18,7 @@ class Command(BaseCommand):
             line_count = 0
             for row in csv_reader:
                 category = Ingredient(name=row['name'],
-                                      measurement=row['measurement_unit'])
+                                      measurement_unit=row['measurement_unit'])
                 category.save()
                 line_count += 1
         self.stdout.write('Добавлено строк %s' % line_count)
