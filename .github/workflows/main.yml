@@ -88,6 +88,7 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         # sudo docker compose -f docker-compose.yml exec backend python manage.py createsuperuser
+        # sudo docker compose -f docker-compose.yml exec backend cp -r /app/static/. /backend_static/static/
         script: |
           cd foodgram/infra/
           sudo docker compose -f docker-compose.yml pull
@@ -96,4 +97,3 @@ jobs:
           sudo docker compose -f docker-compose.yml exec backend python manage.py migrate
           sudo docker compose -f docker-compose.yml exec backend python manage.py import_csv
           sudo docker compose -f docker-compose.yml exec backend python manage.py collectstatic --noinput
-          sudo docker compose -f docker-compose.yml exec backend python manage.py cp -r /app/static/. /backend_static/static/
