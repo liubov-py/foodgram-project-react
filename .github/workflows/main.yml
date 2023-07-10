@@ -108,6 +108,11 @@ jobs:
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
           cd foodgram/infra/
+          cd foodgram || exit;
           sudo docker compose -f docker-compose.yml pull
           sudo docker compose -f docker-compose.yml down
           sudo docker compose -f docker-compose.yml up -d
+          sudo docker compose -f docker-compose.yml exec backend python manage.py migrate;
+          sudo docker compose -f docker-compose.yml exec backend python manage.py import_csv;
+          sudo docker compose -f docker-compose.yml exec backend python manage.py collectstatic --noinput;
+          sudo docker compose -f docker-compose.yml exec backend python manage.py cp -r /app/collected_static/. /backend_static/static/;
