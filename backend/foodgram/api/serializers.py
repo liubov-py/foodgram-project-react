@@ -3,7 +3,6 @@ import re
 
 import webcolors
 from django.core.files.base import ContentFile
-from django.shortcuts import get_object_or_404
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -142,6 +141,8 @@ class RecipeSerializer(serializers.ModelSerializer):
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     """Serializer для промежуточной таблицы Рецепт-Ингердиент."""
 
+    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
+
     class Meta:
         model = RecipeIngredient
         fields = ('id', 'amount')
@@ -151,7 +152,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     """Serializer для создания рецептов."""
 
     author = CustomUserSerializer(read_only=True)
-    tags = TagSerializer(many=True)
+    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(),
+                                              many=True)
     ingredients = RecipeIngredientSerializer(many=True)
     image = Base64ImageField(required=False, allow_null=True)
 
@@ -168,7 +170,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         for ingredient in ingredients:
             recipe_list.append(
                 RecipeIngredient(recipe=recipe,
-                                 ingredient_id=ingredient['id'],
+                                 ingredient=ingredient['id'],
                                  amount=ingredient['amount']))
         RecipeIngredient.objects.bulk_create(
             recipe_list)
@@ -178,7 +180,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
-        self.ingredient_create(self, recipe, ingredients)
+        self.ingredient_create(recipe, ingredients)
         return recipe
 
     def update(self, recipe, validated_data):
@@ -188,36 +190,30 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         recipe.tags.clear()
         recipe.tags.set(tags)
         recipe.ingredients.clear()
-        self.ingredient_create(self, recipe, ingredients)
+        self.ingredient_create(recipe, ingredients)
         recipe.save()
         return recipe
 
-#     def validate_ingredients(self, ingredients):
-# # Что пришли теги +
-# # Что вес ингредиентов больше нуля +
-# # Что ингредиенты не повторяются +
-# # Что время готовки больше нуля +
-# # Что пришли ингредиенты +
-#         if not ingredients:
-#             raise ValidationError(
-#                 'Выберите ингредиенты.'
-#             )
-#         for ingredient in ingredients:
-#             if int(ingredient['amount']) <= 0:
-#                 raise ValidationError(
-#                     'Укажите вес/количество ингредиентов.'
-#                 )
-#         ingredients_list = []
-#         for ingredient in ingredients:
-#             ingredient = get_object_or_404(Ingredient, id=ingredient['id'])
-#             ingredients_list.append(ingredient)
-#             if ingredient in ingredients_list:
-#                 raise ValidationError(
-#                     'Ингредиенты в рецепте не могут повторяться.'
-#                 )
-#         return ingredients
+    def validate_ingredients(self, ingredients):
+        if not ingredients:
+            raise ValidationError(
+                'Выберите ингредиенты.'
+            )
+        for ingredient in ingredients:
+            if int(ingredient['amount']) <= 0:
+                raise ValidationError(
+                    'Укажите вес/количество ингредиентов.'
+                )
+        ingredients_list = []
+        for ingredient in ingredients:
+            if ingredient in ingredients_list:
+                raise ValidationError(
+                    'Ингредиенты в рецепте не могут повторяться.'
+                )
+            ingredients_list.append(ingredient)
+        return ingredients
 
-    def validate_cooking_time(value):
+    def validate_cooking_time(self, value):
         if value <= 0:
             raise ValidationError(
                 'Время приготовления должно быть больше нуля.'
@@ -229,6 +225,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             raise ValidationError(
                 'Выберите теги.'
             )
+        return tags
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
