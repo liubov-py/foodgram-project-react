@@ -3,8 +3,10 @@ import re
 
 import webcolors
 from django.core.files.base import ContentFile
+from django.shortcuts import get_object_or_404
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueTogetherValidator
 
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
@@ -188,6 +190,44 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         self.ingredient_create(self, recipe, ingredients)
         recipe.save()
         return recipe
+
+#     def validate_ingredients(self, ingredients):
+# # Что пришли теги +
+# # Что вес ингредиентов больше нуля +
+# # Что ингредиенты не повторяются +
+# # Что время готовки больше нуля +
+# # Что пришли ингредиенты +
+#         if not ingredients:
+#             raise ValidationError(
+#                 'Выберите ингредиенты.'
+#             )
+#         for ingredient in ingredients:
+#             if int(ingredient['amount']) <= 0:
+#                 raise ValidationError(
+#                     'Укажите вес/количество ингредиентов.'
+#                 )
+#         ingredients_list = []
+#         for ingredient in ingredients:
+#             ingredient = get_object_or_404(Ingredient, id=ingredient['id'])
+#             ingredients_list.append(ingredient)
+#             if ingredient in ingredients_list:
+#                 raise ValidationError(
+#                     'Ингредиенты в рецепте не могут повторяться.'
+#                 )
+#         return ingredients
+
+    def validate_cooking_time(value):
+        if value <= 0:
+            raise ValidationError(
+                'Время приготовления должно быть больше нуля.'
+            )
+        return value
+
+    def validate_tags(self, tags):
+        if not tags:
+            raise ValidationError(
+                'Выберите теги.'
+            )
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
