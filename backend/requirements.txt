@@ -10,7 +10,7 @@ colorama==0.4.6
 cryptography==41.0.1
 defusedxml==0.7.1
 Django==3.2
-django-filter-23.2
+django-filter==23.2
 django-templated-mail==1.1.1
 djangorestframework==3.12.4
 djangorestframework-simplejwt==5.2.2
