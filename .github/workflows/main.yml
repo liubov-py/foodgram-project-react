@@ -61,7 +61,7 @@ jobs:
   #         push: true
   #         tags: liubovpy/foodgram_backend:latest
   
-  
+
   # build_frontend_and_push_to_docker_hub:
   #   name: Push frontend Docker image to DockerHub
   #   runs-on: ubuntu-latest
@@ -87,17 +87,17 @@ jobs:
       # - build_and_push_to_docker_hub
       # - build_frontend_and_push_to_docker_hub
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
-    - name: Copy infra via ssh
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USER }}
-        key: ${{ secrets.SSH_KEY }}
-        passphrase: ${{ secrets.SSH_PASSPHRASE }}
-        source: "./infra"
-        target: "foodgram"
+    # - name: Checkout repo
+    #   uses: actions/checkout@v3
+    # - name: Copy infra via ssh
+    #   uses: appleboy/scp-action@master
+    #   with:
+    #     host: ${{ secrets.HOST }}
+    #     username: ${{ secrets.USER }}
+    #     key: ${{ secrets.SSH_KEY }}
+    #     passphrase: ${{ secrets.SSH_PASSPHRASE }}
+    #     source: "./infra"
+    #     target: "foodgram"
     - name: Executing remote ssh commands to deploy
       uses: appleboy/ssh-action@master
       with:
