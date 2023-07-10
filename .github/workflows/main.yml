@@ -82,37 +82,36 @@ jobs:
   #         context: ./frontend/
   #         push: true
   #         tags: liubovpy/foodgram_frontend:latest
-  deploy:
-    runs-on: ubuntu-latest
-    needs: 
-      - build_and_push_to_docker_hub
-      # - build_frontend_and_push_to_docker_hub
-    steps:
-    # - name: Checkout repo
-    #   uses: actions/checkout@v3
-    # - name: Copy infra via ssh
-    #   uses: appleboy/scp-action@master
-    #   with:
-    #     host: ${{ secrets.HOST }}
-    #     username: ${{ secrets.USER }}
-    #     key: ${{ secrets.SSH_KEY }}
-    #     passphrase: ${{ secrets.SSH_PASSPHRASE }}
-    #     source: "./infra"
-    #     target: "foodgram"
-    - name: Executing remote ssh commands to deploy
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USER }}
-        key: ${{ secrets.SSH_KEY }}
-        passphrase: ${{ secrets.SSH_PASSPHRASE }}
-        script: |
-          cd foodgram/infra/
-          cd foodgram || exit;
-          sudo docker compose -f docker-compose.yml pull
-          sudo docker compose -f docker-compose.yml down
-          sudo docker compose -f docker-compose.yml up -d
-          sudo docker compose -f docker-compose.yml exec backend python manage.py migrate;
-          sudo docker compose -f docker-compose.yml exec backend python manage.py import_csv;
-          sudo docker compose -f docker-compose.yml exec backend python manage.py collectstatic --noinput;
-          sudo docker compose -f docker-compose.yml exec backend python manage.py cp -r /app/collected_static/. /backend_static/static/;
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs: 
+  #     - build_and_push_to_docker_hub
+  #     # - build_frontend_and_push_to_docker_hub
+  #   steps:
+  #   # - name: Checkout repo
+  #   #   uses: actions/checkout@v3
+  #   # - name: Copy infra via ssh
+  #   #   uses: appleboy/scp-action@master
+  #   #   with:
+  #   #     host: ${{ secrets.HOST }}
+  #   #     username: ${{ secrets.USER }}
+  #   #     key: ${{ secrets.SSH_KEY }}
+  #   #     passphrase: ${{ secrets.SSH_PASSPHRASE }}
+  #   #     source: "./infra"
+  #   #     target: "foodgram"
+  #   - name: Executing remote ssh commands to deploy
+  #     uses: appleboy/ssh-action@master
+  #     with:
+  #       host: ${{ secrets.HOST }}
+  #       username: ${{ secrets.USER }}
+  #       key: ${{ secrets.SSH_KEY }}
+  #       passphrase: ${{ secrets.SSH_PASSPHRASE }}
+  #       script: |
+  #         cd foodgram/infra/
+  #         sudo docker compose -f docker-compose.yml pull
+  #         sudo docker compose -f docker-compose.yml down
+  #         sudo docker compose -f docker-compose.yml up -d
+  #         sudo docker compose -f docker-compose.yml exec backend python manage.py migrate;
+  #         sudo docker compose -f docker-compose.yml exec backend python manage.py import_csv;
+  #         sudo docker compose -f docker-compose.yml exec backend python manage.py collectstatic --noinput;
+  #         sudo docker compose -f docker-compose.yml exec backend python manage.py cp -r /app/collected_static/. /backend_static/static/;
