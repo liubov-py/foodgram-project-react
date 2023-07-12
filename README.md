@@ -18,3 +18,35 @@ python backend/foodgram/manage.py import_csv
 ## Примеры
 https://foodgramliu.ddns.net/api/docs/redoc.html
 
+
+# GET
+https://foodgramliu.ddns.net/api/users/
+
+{
+"count": 123,
+"next": "http://foodgram.example.org/api/users/?page=4",
+"previous": "http://foodgram.example.org/api/users/?page=2",
+"results": [
+{
+"email": "user@example.com",
+"id": 0,
+"username": "string",
+"first_name": "Вася",
+"last_name": "Пупкин",
+"is_subscribed": false
+}
+]
+}
+
+
+
+# POST
+https://foodgramliu.ddns.net/api/users/
+
+{
+"email": "vpupkin@yandex.ru",
+"username": "vasya.pupkin",
+"first_name": "Вася",
+"last_name": "Пупкин",
+"password": "Qwerty123"
+}
