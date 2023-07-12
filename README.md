@@ -1,3 +1,11 @@
+# адрес сервера (IP или доменное имя)
+51.250.27.116
+https://foodgramliu.ddns.net/
+
+# логин и пароль администратора
+admin
+admin
+
 # Foodgram, «Продуктовый помощник»
 
 ## О проекте
@@ -8,3 +16,5 @@
 python backend/foodgram/manage.py import_csv
 
 ## Примеры
+https://foodgramliu.ddns.net/api/docs/redoc.html
+
