@@ -24,7 +24,6 @@ services:
   frontend:
     image: liubovpy/foodgram_frontend
     env_file: .env
-    # command: cp -r /app/build/. /frontend_static/
     volumes:
       - ../frontend/:/app/result_build/
     

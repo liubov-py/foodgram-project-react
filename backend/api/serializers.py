@@ -47,7 +47,6 @@ class CustomUserSerializer(UserSerializer):
     """Serializer для /users."""
 
     is_subscribed = serializers.SerializerMethodField('get_is_subscribed')
-    id = serializers.IntegerField()
 
     class Meta:
         model = User
